@@ -1,9 +1,9 @@
 #!/bin/bash
 
-gpg_keyserver='hkps.pool.sks-keyservers.net'
+gpg_keyserver=${1:-'hkps.pool.sks-keyservers.net'}
 gpg_hkps_port='443'
 
-keyserver_pool="$(dig hkps.pool.sks-keyservers.net +short | sort | tr '\n' ' ')"
+keyserver_pool="$(dig ${gpg_keyserver} +short | sort | tr '\n' ' ')"
 
 read -r -d '' stringify_ca_id <<-'EOPERLPROG'
   s/^\s*Issuer:\s*//;
