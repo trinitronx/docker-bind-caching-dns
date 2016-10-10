@@ -18,3 +18,7 @@ RUN apt-get -y install curl gnupg-curl && \
     rm /tmp/dlv-key.sh ; rm /tmp/update-gpg-keyserver-root-ca-certs.sh ; \
     apt-get -y remove curl ; \
     apt-get -y autoremove
+
+RUN mkdir -p /run/named && chmod 0775 /run/named && chown root:bind /run/named
+
+CMD ["/usr/sbin/named", "-f", "-u", "bind", "-g"]
