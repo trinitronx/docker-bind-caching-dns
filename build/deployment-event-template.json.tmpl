@@ -1,0 +1,15 @@
+{
+    "@timestamp" : "${NOW_TIMESTAMP}",
+    "tags" : ["deploy","deployment","gocd"],
+    "message" : "GoCD Deployment: ${GO_PIPELINE_NAME} v${GO_PIPELINE_COUNTER} <br/>Triggered by: ${GO_TRIGGER_USER}  <br/>Repo: ${GIT_REPO_URL}  <br/>Revision: ${GO_REVISION} <br/>",
+    "build_id" : ${GO_PIPELINE_COUNTER},
+    "build_name" : "${GO_PIPELINE_NAME}",
+    "build_trigger" : "${GO_TRIGGER_USER}",
+    "cd_server" : "${GOCD_SERVER}",
+    "git_revision" : "${GO_REVISION}",
+    "git_repo_url" : "${GIT_REPO_URL}",
+    "job_name" : "${GO_JOB_NAME}",
+    "stage_id" : ${GO_STAGE_COUNTER},
+    "stage_name" : "${GO_STAGE_NAME}",
+    "url" : "https://${GOCD_SERVER}/go/pipelines/${GO_PIPELINE_NAME}/${GO_PIPELINE_COUNTER}/${GO_STAGE_NAME}/${GO_STAGE_COUNTER}"
+}

@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: "$DEPLOY_CAUSE"
+#    deployment.kubernetes.io/revision: "$GO_PIPELINE_LABEL"
+  name: $KUBERNETES_DEPLOYMENT_NAME
+spec:
+  replicas: 1
+  minReadySeconds: 15
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 50%
+  template:
+    metadata:
+      labels:
+        name: $KUBERNETES_POD_NAME
+    spec:
+      containers:
+      - name: $KUBERNETES_POD_NAME
+        image: $DOCKER_IMAGE
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 4Gi
+          requests:
+            cpu: 400m
+            memory: 4Gi
