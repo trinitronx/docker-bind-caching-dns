@@ -4,9 +4,15 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN true
 
 RUN apt-get update
-RUN apt-get -y install bind9 bind9utils dnsutils ca-certificates
 
-ADD etc/named.conf /etc/named.conf
+# Set UTF-8 locale & timezone
+COPY build/preseed.txt /root/preseed.txt
+RUN debconf-set-selections /root/preseed.txt && \
+    apt-get -y install tzdata locales ; \
+    locale-gen "en_US.UTF-8" ; \
+    dpkg-reconfigure tzdata locales
+
+RUN apt-get -y install bind9 bind9utils dnsutils ca-certificates libxml2 libxml2-dev libjson-c2 libjson-c-dev
 
 ADD bin/dlv-key.sh /tmp/dlv-key.sh
 
