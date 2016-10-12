@@ -21,6 +21,16 @@ spec:
       containers:
       - name: $KUBERNETES_POD_NAME
         image: $DOCKER_IMAGE
+        ports:
+         - name: domain
+           containerPort: 53
+           hostPort: 5353
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - dig @localhost NS emaildefense.proofpoint.com >/dev/null
         resources:
           limits:
             cpu: 1000m
