@@ -102,7 +102,7 @@ $(DEPLOYMENT_YML): build/deployment-template.yml.tmpl
 	export KUBERNETES_DEPLOYMENT_NAME="$(REPO_NAME)" ; \
 	export KUBERNETES_POD_NAME="$(REPO_NAME)" ; \
 	export DOCKER_IMAGE="$(REPO):$$(cat .packaged)" ; \
-	[ -d "$$(dirname $(DEPLOYMENT_YML))" ] && mkdir -p $$(dirname $(DEPLOYMENT_YML)) || true ; \
+	[ ! -d "$$(dirname $(DEPLOYMENT_YML))" ] && mkdir -p $$(dirname $(DEPLOYMENT_YML)) || true ; \
 	export DEPLOY_CAUSE="$(shell bash -c '[ -n "$$GO_PIPELINE_NAME" ] && echo "GoCD Deployment: https://$(GOCD_SERVER)/go/pipelines/$${GO_PIPELINE_NAME}/$${GO_PIPELINE_COUNTER}/$${GO_STAGE_NAME}/$${GO_STAGE_COUNTER}   Triggered by: $${GO_TRIGGER_USER}  Revision: $${GO_REVISION}" || echo "GNU Make on $$HOSTNAME  Triggered by: $$USER  Revision: $$(git rev-parse HEAD)" ')" ; \
 	  cat build/deployment-template.yml.tmpl | envsubst > $(DEPLOYMENT_YML)
 
