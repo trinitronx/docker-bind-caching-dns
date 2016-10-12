@@ -79,7 +79,7 @@ package: .packaged ## Uses Dockerfile to build the releaseable Docker container 
 
 ship: package .docker/config.json ## Tag & Push the built container to the Docker Registry
 	@echo "BEGIN STEP: SHIP"
-	docker tag $(REPO):$(REV) $(REPO):latest
+	docker tag $(REPO):$$(cat .packaged) $(REPO):latest
 	docker --config=.docker/ push $(REPO):$(shell cat .packaged)
 	docker --config=.docker/ push $(REPO):latest
 
@@ -130,7 +130,7 @@ es-deploy-event: | es-index-deploy-events ## POST Deployment event to ElasticSea
 	export NOW_TIMESTAMP=$(shell bash -c 'date -u +%FT%T%z') ; \
     [ -n "$(GO_PIPELINE_NAME)" ] && cat build/deployment-event-template.json.tmpl | envsubst | curl -k -s "https://$(ES_HOST)/events/deployment" -d @-  || true
 
-deploy: $(DEPLOYMENT_YML) .docker/config.json | es-deploy-event ## Deploys the shipped container to Kubernetes (Renders template build/deployment-template.yml.tmpl & pipes to kubectl apply -f -)
+deploy: ship $(DEPLOYMENT_YML) .docker/config.json | es-deploy-event ## Deploys the shipped container to Kubernetes (Renders template build/deployment-template.yml.tmpl & pipes to kubectl apply -f -)
 	kubectl $(KUBECTL_FLAGS) apply -f $(DEPLOYMENT_YML)
 
 container-deploy: clean .docker/config.json build/Dockerfile.make.onbuild ## Runs "make deploy" inside temp build container (Use this in GoCD)
