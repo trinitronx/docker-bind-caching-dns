@@ -94,8 +94,6 @@ container-ship: .docker/config.json  ## Runs "make ship" inside temp build conta
                     -v /var/run/docker.sock:/var/run/docker.sock \
                     "$(REPO):build-$(REV)"                       \
                     "make ship"; exit_status=$$? ;               \
-                docker cp "$(REPO)-container-ship-$(REV)":/src/$(bats_test_outfile) $(bats_test_outfile); \
-                docker cp "$(REPO)-container-ship-$(REV)":/src/$(tests_xml) $(tests_xml); \
                 echo "CONTAINER_SHIP_RESULT=$$exit_status"; exit $$exit_status; '
 
 $(DEPLOYMENT_YML): build/deployment-template.yml.tmpl
