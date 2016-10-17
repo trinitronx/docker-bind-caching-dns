@@ -83,7 +83,7 @@ ship: package .docker/config.json ## Tag & Push the built container to the Docke
 	docker --config=.docker/ push $(REPO):$(shell cat .packaged)
 	docker --config=.docker/ push $(REPO):latest
 
-container-ship: .docker/config.json  ## Runs "make ship" inside temp build container (Use this in GoCD)
+container-ship: .docker/config.json build-inception-container build/Dockerfile.make.onbuild  ## Runs "make ship" inside temp build container (Use this in GoCD)
 	@# Comment that will get output minus creds so we know what is going on
 	#docker run --rm $$(DOCKER_AWS_CREDENTIALS) -v /var/run/docker.sock:/var/run/docker.sock "$(REPO):build-$(REV)" "make ship"
 	@bash -c '  cleanup() { docker rm -v "$(REPO)-container-ship-$(REV)" ; docker rmi "$(REPO):build-$(REV)"; } ; \
@@ -131,7 +131,7 @@ es-deploy-event: | es-index-deploy-events ## POST Deployment event to ElasticSea
 deploy: ship $(DEPLOYMENT_YML) .docker/config.json | es-deploy-event ## Deploys the shipped container to Kubernetes (Renders template build/deployment-template.yml.tmpl & pipes to kubectl apply -f -)
 	kubectl $(KUBECTL_FLAGS) apply -f $(DEPLOYMENT_YML)
 
-container-deploy: clean .docker/config.json build/Dockerfile.make.onbuild ## Runs "make deploy" inside temp build container (Use this in GoCD)
+container-deploy: clean .docker/config.json build-inception-container build/Dockerfile.make.onbuild ## Runs "make deploy" inside temp build container (Use this in GoCD)
 	docker build -f build/Dockerfile.make.onbuild -t "$(REPO):build-$(REV)" .
 	if [ -n "$(GO_PIPELINE_NAME)" ]; then  export GO_PIPELINE_NAME GO_PIPELINE_COUNTER GO_STAGE_NAME GO_STAGE_COUNTER GO_JOB_NAME GO_TRIGGER_USER GO_REVISION USER ;  fi
 	@# Comment that will get output minus creds so we know what is going on
@@ -170,7 +170,7 @@ secrets: secrets-inception-container ## Creates Kubernets Secrets from build/sec
 	           -c '/src/bin/render-lpass-file-template-into-secret /src/deploy/secrets' | kubectl apply -f -
 	@stty echo
 
-container-secrets: clean .docker/config.json build/Dockerfile.make.onbuild ## Runs "make secrets" inside temp build container
+container-secrets: clean .docker/config.json build-inception-container build/Dockerfile.make.onbuild ## Runs "make secrets" inside temp build container
 	docker build -f build/Dockerfile.make.onbuild -t "$(REPO):build-$(REV)" .
 	@# Comment that will get output minus creds so we know what is going on
 	#docker run --rm -it $$(DOCKER_AWS_CREDENTIALS) -e KUBECTL_FLAGS="$(KUBECTL_FLAGS)" --net=host -v /var/run/docker.sock:/var/run/docker.sock -v $(HOME)/.lpass:/root/.lpass -v $(PWD):/root/  "$(REPO):build-$(REV)" "make secrets"
