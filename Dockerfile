@@ -26,6 +26,6 @@ RUN apt-get -y install curl gnupg-curl && \
     apt-get -y autoremove
 
 RUN mkdir -p /run/named && chmod 0775 /run/named && chown root:bind /run/named
-COPY etc/named.conf /etc/named.conf
+COPY etc/named.conf /etc/bind/named.conf
 
 CMD ["/usr/sbin/named", "-4", "-f", "-u", "bind", "-g"]
