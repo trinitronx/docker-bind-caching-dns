@@ -62,11 +62,11 @@ all: ## Do EVERYTHING!
 
 build-inception-container: .docker/config.json ## Builds the temp build container base image from build/Dockerfile.make
 	docker pull $(BUILD_TOOLS)
-	docker build -f build/Dockerfile.make -t "$(REGISTRY)/$(BUILD_TOOLS_KUBECTL_REPO):build" .
-	docker --config=.docker/ push "$(REGISTRY)/$(BUILD_TOOLS_KUBECTL_REPO):build"
+	docker build -f build/Dockerfile.make -t "$(REGISTRY)/$(BUILD_TOOLS_KUBECTL_REPO)" .
+	docker --config=.docker/ push "$(REGISTRY)/$(BUILD_TOOLS_KUBECTL_REPO)"
 
 build/Dockerfile.make.onbuild:
-	printf 'FROM $(REPO):build\n' > build/Dockerfile.make.onbuild
+	printf 'FROM $(REGISTRY)/$(BUILD_TOOLS_KUBECTL_REPO)\n' > build/Dockerfile.make.onbuild
 
 .packaged:
 	@echo "BEGIN STEP: PACKAGE"
@@ -186,6 +186,7 @@ container-secrets: clean .docker/config.json build-inception-container build/Doc
                     "make secrets"; '
 
 clean: ## Remove & cleanup leftover files from other make targets
+	rm -f build/Dockerfile.make.onbuild
 	rm -f .docker/config.json
 	rm -f $(DEPLOYMENT_YML)
 	rm -f .packaged
