@@ -84,12 +84,13 @@ ship: package .docker/config.json ## Tag & Push the built container to the Docke
 	docker --config=.docker/ push $(REPO):latest
 
 container-ship: .docker/config.json build-inception-container build/Dockerfile.make.onbuild  ## Runs "make ship" inside temp build container (Use this in GoCD)
+	docker build -f build/Dockerfile.make.onbuild -t "$(REPO):build-$(REV)" .
 	@# Comment that will get output minus creds so we know what is going on
 	#docker run --rm $$(DOCKER_AWS_CREDENTIALS) -v /var/run/docker.sock:/var/run/docker.sock "$(REPO):build-$(REV)" "make ship"
-	@bash -c '  cleanup() { docker rm -v "$(REPO)-container-ship-$(REV)" ; docker rmi "$(REPO):build-$(REV)"; } ; \
+	@bash -c '  cleanup() { docker rm -v "$(REPO_NAME)-container-ship-$(REV)" ; docker rmi "$(REPO):build-$(REV)"; } ; \
                 trap cleanup EXIT HUP INT QUIT KILL TERM ;       \
-	            docker run  $(DOCKER_AWS_CREDENTIALS)            \
-                    --name="$(REPO)-container-ship-$(REV)"       \
+	            docker run  $(DOCKER_AWS_CREDENTIALS)        \
+                    --name="$(REPO_NAME)-container-ship-$(REV)"  \
                     -e GO_PIPELINE_NAME=$(GO_PIPELINE_NAME)      \
                     -v /var/run/docker.sock:/var/run/docker.sock \
                     "$(REPO):build-$(REV)"                       \
