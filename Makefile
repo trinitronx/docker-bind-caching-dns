@@ -62,11 +62,11 @@ all: ## Do EVERYTHING!
 
 build-inception-container: .docker/config.json ## Builds the temp build container base image from build/Dockerfile.make
 	docker pull $(BUILD_TOOLS)
-	docker build -f build/Dockerfile.make -t "$(REGISTRY)/$(BUILD_TOOLS_KUBECTL_REPO):build" .
-	docker --config=.docker/ push "$(REGISTRY)/$(BUILD_TOOLS_KUBECTL_REPO):build"
+	docker build -f build/Dockerfile.make -t "$(REGISTRY)/$(BUILD_TOOLS_KUBECTL_REPO)" .
+	docker --config=.docker/ push "$(REGISTRY)/$(BUILD_TOOLS_KUBECTL_REPO)"
 
 build/Dockerfile.make.onbuild:
-	printf 'FROM $(REPO):build\n' > build/Dockerfile.make.onbuild
+	printf 'FROM $(REGISTRY)/$(BUILD_TOOLS_KUBECTL_REPO)\n' > build/Dockerfile.make.onbuild
 
 .packaged:
 	@echo "BEGIN STEP: PACKAGE"
@@ -84,12 +84,13 @@ ship: package .docker/config.json ## Tag & Push the built container to the Docke
 	docker --config=.docker/ push $(REPO):latest
 
 container-ship: .docker/config.json build-inception-container build/Dockerfile.make.onbuild  ## Runs "make ship" inside temp build container (Use this in GoCD)
+	docker build -f build/Dockerfile.make.onbuild -t "$(REPO):build-$(REV)" .
 	@# Comment that will get output minus creds so we know what is going on
 	#docker run --rm $$(DOCKER_AWS_CREDENTIALS) -v /var/run/docker.sock:/var/run/docker.sock "$(REPO):build-$(REV)" "make ship"
-	@bash -c '  cleanup() { docker rm -v "$(REPO)-container-ship-$(REV)" ; docker rmi "$(REPO):build-$(REV)"; } ; \
+	@bash -c '  cleanup() { docker rm -v "$(REPO_NAME)-container-ship-$(REV)" ; docker rmi "$(REPO):build-$(REV)"; } ; \
                 trap cleanup EXIT HUP INT QUIT KILL TERM ;       \
-	            docker run  $(DOCKER_AWS_CREDENTIALS)            \
-                    --name="$(REPO)-container-ship-$(REV)"       \
+	            docker run  $(DOCKER_AWS_CREDENTIALS)        \
+                    --name="$(REPO_NAME)-container-ship-$(REV)"  \
                     -e GO_PIPELINE_NAME=$(GO_PIPELINE_NAME)      \
                     -v /var/run/docker.sock:/var/run/docker.sock \
                     "$(REPO):build-$(REV)"                       \
@@ -186,6 +187,7 @@ container-secrets: clean .docker/config.json build-inception-container build/Doc
                     "make secrets"; '
 
 clean: ## Remove & cleanup leftover files from other make targets
+	rm -f build/Dockerfile.make.onbuild
 	rm -f .docker/config.json
 	rm -f $(DEPLOYMENT_YML)
 	rm -f .packaged
