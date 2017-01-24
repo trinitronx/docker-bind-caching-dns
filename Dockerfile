@@ -28,4 +28,6 @@ RUN apt-get -y install curl gnupg-curl && \
 RUN mkdir -p /run/named && chmod 0775 /run/named && chown root:bind /run/named
 COPY etc/named.conf /etc/bind/named.conf
 
+EXPOSE 53:53 53:53/udp
+
 CMD ["/usr/sbin/named", "-4", "-f", "-u", "bind", "-g"]
